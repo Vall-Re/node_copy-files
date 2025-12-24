@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 'use strict';
 
-const { cp } = require('fs/promises');
+const { cp, stat } = require('fs/promises');
 
 async function copyFile() {
   const [, , source, dest] = process.argv;
@@ -13,16 +13,33 @@ async function copyFile() {
   }
 
   if (source === dest) {
-    console.log('Source and destination paths are the same');
-
     return;
   }
 
   try {
-    await cp(source, dest);
-    console.log(`File copied from ${source} to ${dest}`);
+    const stats = await stat(source);
+
+    if (stats.isDirectory()) {
+      console.error('Source path is a directory, not a file.');
+
+      return;
+    }
+
+    try {
+      await cp(source, dest);
+    } catch (error) {
+      console.error(`Error copying file: ${error.message}`);
+    }
   } catch (error) {
-    console.error(`Error copying file: ${error.message}`);
+    if (error.code === 'ENOENT') {
+      console.error('Source file does not exist.');
+
+      return;
+    } else {
+      console.error(error.message);
+    }
+
+    process.exit(0);
   }
 }
 
