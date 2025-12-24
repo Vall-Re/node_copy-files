@@ -84,7 +84,7 @@ describe('File Copy', () => {
     expect(fs.existsSync(destinationFile)).toBe(false);
   });
 
-  test('should throw an error if destination is a directory', async () => {
+  test('should copy file into a directory', async () => {
     const directoryPath = path.join(
       tempDir,
       faker.system.commonFileName('txt'),
